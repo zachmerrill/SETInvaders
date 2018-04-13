@@ -73,3 +73,7 @@ void Game::Update() {
 	hpTimer->Update();
 	currentScene->Update(hpTimer->GetTimeTotal(), hpTimer->GetDeltaTime());
 }
+
+Scene* Game::GetCurrentScene() {
+	return currentScene;
+}

@@ -53,6 +53,7 @@ bool Graphics::Init(HWND windowHandle) {
 
 	res = rendertarget->CreateSolidColorBrush(D2D1::ColorF(0, 0, 0, 0), &brush);
 	if(res != S_OK) return false;
+
 	return true;
 }
 
@@ -138,4 +139,52 @@ RETURNS		:	void
 void Graphics::DrawLine(float x1, float y1, float x2, float y2, float r, float g, float b, float a) {
 	brush->SetColor(D2D1::ColorF(r, g, b, a));
 	rendertarget->DrawLine(D2D1::Point2F(x1, y1), D2D1::Point2F(x2, y2), brush, 1.0f, NULL);
+}
+
+/*
+METHOD		:	WriteText
+DESCRIPTION	:	This method draws writes the text to the rendertarget.
+PARAMETERS	:	wchar_t* text - the text to write
+				float x - the x coordinate
+				float y - the y coordinate
+				float r - red
+				float g - green
+				float b - blue
+				float a - alpha
+RETURNS		:	void
+*/
+void Graphics::WriteText(wchar_t* text, float x, float y, float size, float r, float g, float b, float a) {
+	brush->SetColor(D2D1::ColorF(r, g, b, a));
+	UINT32 textLength = (UINT32)wcslen(text);
+
+	IDWriteFactory* textFactory = NULL;
+	IDWriteTextFormat* textFormat = NULL;
+
+	DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(IDWriteFactory),
+		reinterpret_cast<IUnknown**>(&textFactory)
+	);
+
+	textFactory->CreateTextFormat(
+		L"Arial",                // Font family name.
+		NULL,                       // Font collection (NULL sets it to use the system font collection).
+		DWRITE_FONT_WEIGHT_REGULAR,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		size,
+		L"en-us",
+		&textFormat
+	);
+
+	rendertarget->DrawText(
+		text,
+		textLength,
+		textFormat,
+		D2D1::RectF(x, y, rendertarget->GetSize().width , rendertarget->GetSize().height),
+		brush
+	);
+
+	if (textFactory) textFactory->Release();
+	if (textFormat) textFormat->Release();
 }

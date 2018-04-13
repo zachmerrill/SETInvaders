@@ -32,8 +32,9 @@ private:
 	Planet* planet2;
 	Planet* planet3;
 	SpriteSheet* background;
-	bool forward = true; // Direction of enenmy movement
+	bool forward = true; // Direction of enemy movement
 	float occupied[3][2]; // Number of occupied squares
+	bool gameOver = false;
 
 public:
 	void Load() override;
@@ -41,6 +42,6 @@ public:
 	void Update(float timeTotal, float timeDelta) override;
 	void Render() override;
 	void Scene1::RandomizePlanet(Planet* planet);
-	bool Scene1::SharedCell(int x1, int y1, int x2, int y2);
+	bool Scene1::SharedCell(int x1, int y1);
 
 };

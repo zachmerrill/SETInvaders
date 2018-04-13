@@ -26,4 +26,5 @@ public:
 	static void SwitchScene(Scene* lev);
 	static void Render();
 	static void Update();
+	static Scene* GetCurrentScene();
 };

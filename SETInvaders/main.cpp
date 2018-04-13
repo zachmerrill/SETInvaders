@@ -8,14 +8,38 @@ DESCRIPTION	:	This file is the main entry point into the program. It holds the g
 */
 #include <Windows.h>
 #include "Graphics.h"
+#include "TitleScene.h"
 #include "Scene1.h"
 #include "Game.h"
 
 
 Graphics* graphics;
+bool start = false;
 
 /*
-METHOD	:	WindowProc
+METHOD		:	InitializeInput
+DESCRIPTION	:	This method initializes the raw input of the keyboard for my application.
+PARAMETERS	:	void
+RETURNS		:	bool true or false
+REFERENCED	:	https://www.youtube.com/watch?v=IEQSB5lDD_I
+*/
+bool InitializeInput() {
+	RAWINPUTDEVICE rawInput[1];
+
+	rawInput[0].usUsagePage = 0x01;
+	rawInput[0].usUsage = 0x06;
+	rawInput[0].dwFlags = 0;
+	rawInput[0].hwndTarget = 0;
+
+	if (RegisterRawInputDevices(rawInput, 1, sizeof(rawInput[0])) == FALSE) {
+		return false;
+	}
+
+	return true;
+}
+
+/*
+METHOD		:	WindowProc
 DESCRIPTION	:	This function handles the messages sent to the Win32 application window.
 PARAMETERS	:	HWND hwnd - A handle to the window
 				UINT uMsg - The message
@@ -24,16 +48,46 @@ PARAMETERS	:	HWND hwnd - A handle to the window
 RETURNS		:	LRESULT - The result of window processing
 */
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	if (uMsg == WM_DESTROY) {
-		PostQuitMessage(0);
-		return 0;
+	switch (uMsg) {
+	case WM_DESTROY:
+		{
+			PostQuitMessage(0);
+			return 0;
+		} break;
+	case WM_INPUT:
+		{
+			// REFERENCED: https://www.youtube.com/watch?v=IEQSB5lDD_I
+			UINT dwSize;
+
+			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+
+			LPBYTE lpb = new BYTE[dwSize];
+			if (lpb == NULL) {
+				return 0;
+			}
+
+			GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
+
+			RAWINPUT* raw = (RAWINPUT*)lpb;
+
+			if (raw->header.dwType == RIM_TYPEKEYBOARD) {
+				if (raw->data.keyboard.Message == WM_KEYDOWN || raw->data.keyboard.Message == WM_SYSKEYDOWN) {
+					if (raw->data.keyboard.VKey == VK_SPACE) {
+						if (!start) {
+							Game::SwitchScene(new Scene1);
+							start = true;
+						}
+					}
+				}
+			}
+		} break;
 	}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 /*
-METHOD	:	wWinMain
+METHOD		:	wWinMain
 DESCRIPTION	:	This function is the entry point for the application.
 PARAMETERS	:	HINSTANCE hInstance - The handle to the instance
 				HINSTANCE prevInstance - Unimportant, always 0
@@ -46,7 +100,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPWSTR cmd, int
 	WNDCLASSEX windowclass;
 	ZeroMemory(&windowclass, sizeof(WNDCLASSEX));
 	windowclass.cbSize = sizeof(WNDCLASSEX);
-	windowclass.hbrBackground = (HBRUSH) COLOR_WINDOW;
+	windowclass.hbrBackground = (HBRUSH)COLOR_WINDOW;
 	windowclass.hInstance = hInstance;
 	windowclass.lpfnWndProc = WindowProc;
 	windowclass.lpszClassName = "MainWindow";
@@ -65,9 +119,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPWSTR cmd, int
 		return -1;
 	}
 
+	// Initialize keys
+	if (!InitializeInput()) {
+		return -1;
+	}
+
 	// Initialize window
 	graphics = new Graphics();
-	if(!graphics->Init(windowhandle)) {
+	if (!graphics->Init(windowhandle)) {
 		delete graphics;
 		return -1;
 	}
@@ -76,16 +135,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPWSTR cmd, int
 	Scene::Init(graphics);
 	ShowWindow(windowhandle, nCmdShow);
 	Game::Init();
-	Game::LoadInitialScene(new Scene1());
+	Game::LoadInitialScene(new TitleScene());
 
 	// Game infinite loop
-#pragma region GameLoop
+	#pragma region GameLoop
 
-	// Use a PeekMessage to avoid locking the graphics/windoProc
+		// Use a PeekMessage to avoid locking the graphics/windowProc
 	MSG message;
 	message.message = WM_NULL;
-	while(message.message != WM_QUIT) {
-		if(PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
+	while (message.message != WM_QUIT) {
+		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE))
 			// Send a message to the WindowProc IF there is one
 			DispatchMessage(&message);
 		else {
@@ -96,11 +155,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE prevInstance, LPWSTR cmd, int
 			graphics->BeginDraw();
 			Game::Render();
 			graphics->EndDraw();
-
 		}
 	}
 
-#pragma endregion
+	#pragma endregion
 	delete graphics;
 	return 0;
 }
+

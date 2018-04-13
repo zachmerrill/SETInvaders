@@ -19,6 +19,7 @@ AUTHOR		:	Zach Merrill
 #include <d2d1effects.h>
 #include <d2d1effects_2.h>
 #include <d2d1effecthelpers.h>
+#include <dwrite_2.h>
 
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
@@ -29,10 +30,10 @@ DESCRIPTION	:	The intent of the Graphics class is to handle our DirectX calls, a
 				for managing the rendertarget.
 */
 class Graphics {
-	ID2D1Factory * factory; // Reference to the factory
+	ID2D1Factory* factory; // Reference to the factory
 	ID2D1HwndRenderTarget* rendertarget; // Reference to the render target (screen)
 	ID2D1SolidColorBrush* brush; // Reference to the brush
-	ID2D1GeometrySink *sink; // Reference to the sink
+	ID2D1GeometrySink* sink; // Reference to the sink
 
 public:
 	Graphics(); // Constructor
@@ -60,4 +61,5 @@ public:
 	void DrawCircle(float c, float y, float radius, float r, float g, float b, float a);
 	void DrawEqTriangle(float x, float y, float sidelength, float r, float g, float b, float a);
 	void DrawLine(float x1, float y1, float x2, float y2, float r, float g, float b, float a);
+	void WriteText(wchar_t* text, float x, float y, float size, float r, float g, float b, float a);
 };
