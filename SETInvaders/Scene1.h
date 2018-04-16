@@ -42,6 +42,6 @@ public:
 	void Update(float timeTotal, float timeDelta) override;
 	void Render() override;
 	void Scene1::RandomizePlanet(Planet* planet);
-	bool Scene1::SharedCell(int x1, int y1);
+	bool Scene1::SharedCell(int x1, int y1, int x2, int y2);
 
 };

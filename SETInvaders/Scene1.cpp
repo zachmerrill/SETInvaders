@@ -147,7 +147,7 @@ void Scene1::RandomizePlanet(Planet* planet) {
 	int i = 0;
 	for (i = 0; i < 3; i++) {
 		// Ensure space is not occupied
-		if (!SharedCell(occupied[i][0], occupied[i][1])) {
+		if (!SharedCell(occupied[i][0], occupied[i][1], x, y)) {
 			occupied[i][0] = x;
 			planet->x = x;
 			occupied[i][1] = y;
@@ -179,9 +179,9 @@ void Scene1::RandomizePlanet(Planet* planet) {
 					float y2 - second y coordinate
  * RETURNS		:	bool - pass or fail
 */
-bool Scene1::SharedCell(int x1, int y1) {
+bool Scene1::SharedCell(int x1, int y1, int x2, int y2) {
 	bool shared = false;
-	if ((x1 != 0) && (y1 != 0)) {
+	if ((x1 == x2) && (y1 == y2)) {
 		shared = true;
 	}
 	return shared;
